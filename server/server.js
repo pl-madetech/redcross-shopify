@@ -9,6 +9,7 @@ import next from "next";
 import Router from "koa-router";
 import bodyParser from "koa-bodyparser";
 import { ClickSit_CreateReturnLabels, ClickSit_GetTrackingStatus } from "./endpoints";
+import { createOrder } from "./workfllow/create-order";
 
 dotenv.config();
 
@@ -105,13 +106,31 @@ app.prepare().then(async () => {
   router.post(SHOPIFY_WEBHOOOK_ORDER_CREATED, webhook, async (ctx) => {
     try {
 
-      const wH = ctx.state.webhook;
+      if (ctx.state.webhook && ctx.state.webhook.payload) {
 
-      console.log("SERVER::Webhooks created order CTX...", wH);
+        const payload = ctx.state.webhook.payload;
+        // Retrieve only what is required for the create order flow
+        const order = {
+          order_number: payload.order_number,
+          email_address: payload.customer.email,
+          shipping_address: payload.shipping_address,
+          graphql_api_id: payload.admin_graphql_api_id,
+        };
 
-      ctx.response.status = 200;
+        createOrder(order)
+          .then(res => {
+            ctx.response.status = res;
+            console.log(`Webhook create-order processed, returned status code ${res}`);
+          })
+          .catch(err => {
+            ctx.response.status = 500;
+            console.log(`Webhook create-order error ${err}`);
+          });
 
-      console.log(`Webhook processed, returned status code 200`);
+      } else {
+        ctx.response.status = 500;
+      }
+
     } catch (error) {
       console.log(`Failed to process webhook create order: ${error}`);
     }
