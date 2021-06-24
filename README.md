@@ -1,5 +1,10 @@
 # Shopify App Node
 
+## Overview
+
+The following section explain how to create a shopify app via command line or cloning from Shopify repository.
+The scope of this section is to demonstrate how can you start a new app and all the configurations required to run shopify-cli and other tools.
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.md)
 [![Build Status](https://travis-ci.com/Shopify/shopify-app-node.svg?branch=master)](https://travis-ci.com/Shopify/shopify-app-node)
 
@@ -28,6 +33,18 @@ This repository is used by [Shopify-App-CLI](https://github.com/Shopify/shopify-
 ## License
 
 This respository is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+
+# British Redcross Custom app
+
+## Overview
+From this section on, it's all hands on, how to start and configure the node server locally, see package.json scripts.
+`npm run dev` or using shopify-cli `shopify serve`
+
+## NGROK
+
+1. Create free account
+`https://dashboard.ngrok.com/get-started/setup`
+2. Follow setup configurations
 
 ## Configuring a webhook using the Shopify Admin
 
