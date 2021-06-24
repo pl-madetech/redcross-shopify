@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import "isomorphic-fetch";
 import createShopifyAuth, { verifyRequest } from "@shopify/koa-shopify-auth";
 import Shopify, { ApiVersion } from "@shopify/shopify-api";
-import { receiveWebhook, registerWebhook } from '@shopify/koa-shopify-webhooks';
+import { receiveWebhook } from '@shopify/koa-shopify-webhooks';
 import Koa from "koa";
 import next from "next";
 import Router from "koa-router";
@@ -68,18 +68,6 @@ app.prepare().then(async () => {
 
         if (!response.success) {
           console.log(`Failed to register APP_UNINSTALLED webhook: ${response.result}`);
-        }
-
-        const createOrder = await registerWebhook({
-          address: `${HOST}${SHOPIFY_WEBHOOOK_ORDER_CREATED}`,
-          topic: 'ORDERS_CREATE',
-          accessToken,
-          shop,
-          apiVersion: ApiVersion.April21
-        });
-
-        if (!createOrder.success) {
-          console.log(`Failed to register ORDER_CREATE webhook: ${createOrder.result}`);
         }
 
         // Redirect to app with shop parameter upon auth
