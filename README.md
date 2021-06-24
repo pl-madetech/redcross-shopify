@@ -45,6 +45,14 @@ From this section on, it's all hands on, how to start and configure the node ser
 1. Create free account
 `https://dashboard.ngrok.com/get-started/setup`
 2. Follow setup configurations
+3. On startup should see something like
+
+Version                       2.3.40
+Region                        United States (us)                                                                        
+Web Interface                 http://127.0.0.1:4040                                                                     
+Forwarding                    http://c5ac085793cb.ngrok.io -> http://localhost:8081                                     
+Forwarding                    https://c5ac085793cb.ngrok.io -> http://localhost:8081
+ 
 
 ## Configuring a webhook using the Shopify Admin
 
