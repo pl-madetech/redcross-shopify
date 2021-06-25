@@ -38,16 +38,12 @@ class Index extends React.Component {
           <Layout.Section>
             {
               /* Page-level banners */
-              <ResourceListWithOrders />
             }
           </Layout.Section>
           <Layout.Section>
             {
-              /* Wide page content */
-              <ResourcePicker
-                resourceType='Product'
-                open={this.state.open}
-              />
+              /* Orders component */
+              <ResourceListWithOrders />
             }
           </Layout.Section>
           <Layout.Section>
