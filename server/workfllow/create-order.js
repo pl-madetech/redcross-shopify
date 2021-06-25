@@ -4,12 +4,21 @@ export const createOrder = async (order) => {
 
     const s = 200;
 
+    // Validate the order
+
+    // Generate address labels
+
+    // Call Clicksit to generate the return labels
+
+    // Send labels to Sharepoint, investigate use of streams
+
+    // Update order reference with tracking number from Clicksit and fulfillment_status to Fulfilled
+    // Double check the status and if we can use the reference property to store the tracking number
+
     // require dependencies
     const PDFDocument = require('pdfkit');
-    const blobStream = require('blob-stream');
 
     var doc = new PDFDocument();
-    //var stream = doc.pipe(blobStream());
     var FileSystem = require('fs');
     doc.pipe(FileSystem.createWriteStream('output.pdf'));
     // draw some text
@@ -49,21 +58,6 @@ export const createOrder = async (order) => {
 
     // end and display the document in the iframe to the right
     doc.end();
-    // stream.on('finish', function () {
-    //   console.log(stream.toBlobURL('application/pdf'));
-    // });
-    // console.log('doc', doc)
-
-    // Validate the order
-
-    // Generate address labels
-
-    // Call Clicksit to generate the return labels
-
-    // Send labels to Sharepoint, investigate use of streams
-
-    // Update order reference with tracking number from Clicksit and fulfillment_status to Fulfilled
-    // Double check the status and if we can use the reference property to store the tracking number
 
 
     if (s === 200) {
