@@ -109,10 +109,11 @@ app.prepare().then(async () => {
       if (ctx.state.webhook && ctx.state.webhook.payload) {
 
         const payload = ctx.state.webhook.payload;
+
         // Retrieve only what is required for the create order flow
         const order = {
           order_number: payload.order_number,
-          email_address: payload.customer.email,
+          email_address: payload.customer?.email,
           shipping_address: payload.shipping_address,
           graphql_api_id: payload.admin_graphql_api_id,
         };
