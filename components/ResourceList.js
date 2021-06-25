@@ -12,7 +12,7 @@ const GET_ORDERS = gql`
         id,
         createdAt,
         name,
-        shippingAddress {address1, address1},
+        shippingAddress {address1, address2},
         customer{displayName, email}
       }
     }
