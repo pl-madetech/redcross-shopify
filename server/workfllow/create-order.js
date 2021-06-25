@@ -9,10 +9,10 @@ export const createOrder = async (order) => {
 
     // Call Clicksit to generate the return labels
 
+    // Send labels to Sharepoint, investigate use of streams
+
     // Update order reference with tracking number from Clicksit and fulfillment_status to Fulfilled
     // Double check the status and if we can use the reference property to store the tracking number
-
-    // Send labels to Sharepoint, investigate use of streams
 
 
     if (s === 200) {
