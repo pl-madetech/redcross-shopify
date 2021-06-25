@@ -1,9 +1,8 @@
 export const createOrder = async (order) => {
-  const s = 200;
-
   return new Promise((resolve, reject) => {
     console.log("CreateOrderFlow::", order);
 
+    const s = 200;
     // Validate the order
 
     // Generate address labels
