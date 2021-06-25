@@ -80,7 +80,7 @@ app.prepare().then(async () => {
         });
 
         if (!createOrder.success) {
-          console.log(`Failed to register ORDER_CREATE webhook: ${createOrder.result}`);
+          console.log("Address for this topic has already been registered");
         }
 
         // Redirect to app with shop parameter upon auth
@@ -207,7 +207,13 @@ app.prepare().then(async () => {
   router.get("/_next/webpack-hmr", handleRequest); // Webpack content is clear
   router.get("(.*)", verifyRequest(), handleRequest); // Everything else must have sessions
 
-  server.use(bodyParser());
+  server.use(async (ctx, next) => {
+    if (ctx.path === '/graphql' || ctx.path.includes('/webhooks')) {
+      return await next();
+    }
+    await bodyParser()(ctx, next);
+  });
+
   server.use(router.allowedMethods());
   server.use(router.routes());
 

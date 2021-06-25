@@ -30,9 +30,40 @@ Or, fork and clone repo
 
 This repository is used by [Shopify-App-CLI](https://github.com/Shopify/shopify-app-cli) as a scaffold for Node apps. You can clone or fork it yourself, but it’s faster and easier to use Shopify App CLI, which handles additional routine development tasks for you.
 
+## Shopify CLI
+
+Read more https://shopify.dev/tools/cli/getting-started
+
+### Create a new project
+```sh
+shopify create
+```
+
+### Start a local development server
+```sh
+shopify serve
+```
+
+### Install your app on your development store
+```sh
+shopify open
+```
+
+### Populate test data
+```sh
+shopify populate
+```
+
+### Deploy app
+```sh
+shopify deploy
+```
+
 ## License
 
 This respository is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+
+</br>
 
 # British Redcross Custom app
 
