@@ -1,8 +1,10 @@
 import ApolloClient from "apollo-boost";
 
+// Generate from skeleton, can't figure out how to work with this function.
+// Leave until proptotype is completed, then if not used remove.
 export const createClient = (shop, accessToken) => {
   return new ApolloClient({
-    uri: `https://${shop}/admin/api/2019-10/graphql.json`,
+    uri: `https://${shop}/admin/api/2021-04/graphql.json`,
     request: operation => {
       operation.setContext({
         headers: {

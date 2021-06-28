@@ -1,7 +1,7 @@
 import { Page, Layout } from "@shopify/polaris";
-import { ResourcePicker } from "@shopify/app-bridge-react";
 import { ClickSitService } from "../server/clicksit/client";
-import ResourceListWithOrders from '../components/ResourceList';
+import ResourceListWithOrders from "../components/ResourceList";
+import { getSessionToken } from "@shopify/app-bridge-utils";
 
 class Index extends React.Component {
 
@@ -17,7 +17,7 @@ class Index extends React.Component {
 
   render() {
 
-    // const sessionToken = await getSessionToken(app);
+    // const sessionToken = await getSessionToken(this.props.appBridge);
     // console.log(sessionToken);
 
     return (
@@ -33,6 +33,14 @@ class Index extends React.Component {
             console.log(trackStatus);
           }
         }}
+        secondaryActions={[{
+
+          content: 'GraphQL Test', onAction: async () => {
+            console.log("GraphQL event");
+
+
+          }
+        }]}
       >
         <Layout>
           <Layout.Section>
@@ -47,9 +55,9 @@ class Index extends React.Component {
             }
           </Layout.Section>
           <Layout.Section>
-              {
+            {
               /* Footer*/
-              }
+            }
           </Layout.Section>
           <Layout.Section>
             {

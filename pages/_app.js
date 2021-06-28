@@ -45,7 +45,7 @@ function MyProvider(props) {
 
   return (
     <ApolloProvider client={client}>
-      <Component {...props} appBridge={app}/>
+      <Component {...props} appBridge={app} />
     </ApolloProvider>
   );
 }
@@ -62,7 +62,7 @@ class MyApp extends App {
             forceRedirect: true,
           }}
         >
-          <MyProvider Component={Component} {...pageProps}/>
+          <MyProvider Component={Component} {...pageProps} />
         </Provider>
       </AppProvider>
     );

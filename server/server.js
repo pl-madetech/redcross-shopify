@@ -20,7 +20,10 @@ const {
   NODE_ENV,
   SCOPES,
   HOST,
-  SHOPIFY_WEBHOOOK_ORDER_CREATED
+  SHOPIFY_WEBHOOOK_ORDER_CREATED,
+  CLICKSIT_RETURN_LABELS_URL,
+  CLICKSIT_GET_TRACKING_STATUS_URL,
+  CLICKSIT_GET_TRACKING_STATUS_API_KEY
 } = process.env;
 
 const webhook = receiveWebhook({ secret: SHOPIFY_API_SECRET });
@@ -159,7 +162,7 @@ app.prepare().then(async () => {
 
       console.log(ctx.request.body);
 
-      const results = await fetch(process.env.CLICKSIT_RETURN_LABELS_URL, {
+      const results = await fetch(CLICKSIT_RETURN_LABELS_URL, {
         method: "POST",
         body: JSON.stringify(ctx.request.body),
       })
@@ -182,11 +185,11 @@ app.prepare().then(async () => {
 
       console.log(ctx.request.body);
 
-      const results = await fetch(process.env.CLICKSIT_GET_TRACKING_STATUS_URL, {
+      const results = await fetch(CLICKSIT_GET_TRACKING_STATUS_URL, {
         method: "POST",
         body: JSON.stringify(ctx.request.body),
         headers: {
-          'api-key': process.env.CLICKSIT_GET_TRACKING_STATUS_API_KEY,
+          'api-key': CLICKSIT_GET_TRACKING_STATUS_API_KEY,
         },
       })
         .then(response => response.json())
