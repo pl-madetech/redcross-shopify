@@ -1,5 +1,9 @@
+import PDFDocument from 'pdfkit';
+import getStream from 'get-stream';
+import fs from 'fs';
+
 export const createOrder = async (order) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     console.log("CreateOrderFlow::", order);
 
     const s = 200;
@@ -14,56 +18,51 @@ export const createOrder = async (order) => {
     // Update order reference with tracking number from Clicksit and fulfillment_status to Fulfilled
     // Double check the status and if we can use the reference property to store the tracking number
 
-    // require dependencies
-    const PDFDocument = require('pdfkit');
+    try {
+      const width = 89 * 2.83465; //size is in points - 1 point = 1/72 Inch
+      const height = 36 * 2.83465; //size is in points - 1 point = 1/72 Inch
+      const margin = 0;
+      const doc = new PDFDocument(
+        {
+          size: [width, height],
+          margins: { // by default, all are 72
+            top: margin,
+            bottom: margin,
+            left: margin,
+            right: margin
+          }
+        }
+      );
+      console.log('Generating PDF');
+      console.log('Env', process.env.NODE_ENV);
+      const shipping_address = order.shipping_address
+      const address =
+        `${shipping_address.first_name ? capataliseEach(shipping_address.first_name) + ' ' : ''}${shipping_address.last_name ? capataliseEach(shipping_address.last_name) : ''}  ${shipping_address.company != null ? '\n' + capataliseEach(shipping_address.company) : ''}
+${capataliseEach(shipping_address.address1)} ${shipping_address.address2 != '' ? '\n' + capataliseEach(shipping_address.address2) : ''}
+${capataliseEach(shipping_address.city)}
+${shipping_address.zip.toUpperCase()}`
+      console.log(address)
+      doc
+        .fontSize(14) //need to check this 
+        .text(address, {
+          align: 'center'
+        })
+      if (process.env.NODE_ENV === 'development') {
+        doc.pipe(fs.createWriteStream(`${__dirname}/../file.pdf`));
+      }
+      doc.end();
 
-    var doc = new PDFDocument();
-    var FileSystem = require('fs');
-    doc.pipe(FileSystem.createWriteStream('output.pdf'));
-    // draw some text
-    doc.fontSize(25).text('Here is some vector graphics...', 100, 80);
-
-    // some vector graphics
-    doc
-      .save()
-      .moveTo(100, 150)
-      .lineTo(100, 250)
-      .lineTo(200, 250)
-      .fill('#FF3300');
-
-    doc.circle(280, 200, 50).fill('#6600FF');
-
-    // an SVG path
-    doc
-      .scale(0.6)
-      .translate(470, 130)
-      .path('M 250,75 L 323,301 131,161 369,161 177,301 z')
-      .fill('red', 'even-odd')
-      .restore();
-
-    // and some justified text wrapped into columns
-    doc
-      .text('And here is some wrapped text...', 100, 300)
-      .font('Times-Roman', 13)
-      .moveDown() 
-      .text("lorem wrapped text skdfjflsdjfkl sjfslf jslfjsdfjsfjskdldfj ksdjdljskl fdsdhfdhfjsdhfksf hsdjfhsdkfhsdjk dfhjsdfh sdfhjk fdshfjsddj hsfjkdhfjksdf", {
-        width: 412,
-        align: 'justify',
-        indent: 30,
-        columns: 2,
-        height: 300,
-        ellipsis: true
-      });
-
-    // end and display the document in the iframe to the right
-    doc.end();
-
-
-    if (s === 200) {
+      const pdfStream = await getStream.buffer(doc);
+      console.log(pdfStream);
       resolve(200);
-    } else {
+    } catch (error) {
+      console.log(error);
       reject("Create order flow failed to succeed.");
     }
 
   });
+}
+
+function capataliseEach(text){
+  return text.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
 }
