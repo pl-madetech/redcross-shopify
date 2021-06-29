@@ -1,28 +1,55 @@
-import React from 'react';
+import React, { useState, useCallback } from "react";
 import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
-import { ResourceList, ResourceItem, TextStyle, Card, DataTable } from "@shopify/polaris";
+import { Filters, Card, DataTable } from "@shopify/polaris";
 
 const GET_ORDERS = gql`
   query First50Orders {
     orders(first: 50) {
-    edges {
-      cursor
-      node {
-        id,
-        createdAt,
-        name,
-        displayFulfillmentStatus,
-        email,
-				note,
-        displayAddress { address1, address2, city, country, zip }
-        shippingAddress { address1, address2 },
-        customer { displayName, email }
+      edges {
+        cursor
+        node {
+          id,
+          createdAt,
+          name,
+          displayFulfillmentStatus,
+          email,
+          note,
+          displayAddress { address1, address2, city, country, zip }
+          shippingAddress { address1, address2 },
+          customer { displayName, email }
+        }
       }
     }
   }
-}
 `;
+
+function DataTableFilter() {
+  const filters = [];
+  const [queryValue, setQueryValue] = useState(null);
+  const handleFiltersQueryChange = useCallback(
+    (value) => setQueryValue(value),
+    [],
+  );
+  const handleQueryValueRemove = useCallback(() => setQueryValue(null), []);
+  const handleFiltersClearAll = useCallback(() => {
+    handleQueryValueRemove();
+  }, [
+    handleQueryValueRemove,
+  ]);
+
+  return (
+    <Card.Section>
+      <Filters
+        queryValue={queryValue}
+        filters={filters}
+        onQueryChange={handleFiltersQueryChange}
+        onQueryClear={handleQueryValueRemove}
+        onClearAll={handleFiltersClearAll}
+      />
+    </Card.Section>
+  );
+}
 
 class ResourceListWithOrders extends React.Component {
   render() {
@@ -41,6 +68,7 @@ class ResourceListWithOrders extends React.Component {
 
           return (
             <Card>
+              <DataTableFilter />
               <DataTable
                 columnContentTypes={[
                   'text',
@@ -58,6 +86,7 @@ class ResourceListWithOrders extends React.Component {
                   'Display Name'
                 ]}
                 rows={rows}
+                footerContent={`Showing ${rows.length} of ${rows.length} results`}
               />
             </Card>
           );
