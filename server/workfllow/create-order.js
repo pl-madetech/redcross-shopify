@@ -10,14 +10,6 @@ export const createOrder = async (order) => {
     // Validate the order
 
     // Generate address labels
-
-    // Call Clicksit to generate the return labels
-
-    // Send labels to Sharepoint, investigate use of streams
-
-    // Update order reference with tracking number from Clicksit and fulfillment_status to Fulfilled
-    // Double check the status and if we can use the reference property to store the tracking number
-
     try {
       const width = 89 * 2.83465; //size is in points - 1 point = 1/72 Inch
       const height = 36 * 2.83465; //size is in points - 1 point = 1/72 Inch
@@ -33,17 +25,14 @@ export const createOrder = async (order) => {
           }
         }
       );
-      console.log('Generating PDF');
-      console.log('Env', process.env.NODE_ENV);
       const shipping_address = order.shipping_address
       const address =
         `${shipping_address.first_name ? capataliseEach(shipping_address.first_name) + ' ' : ''}${shipping_address.last_name ? capataliseEach(shipping_address.last_name) : ''}  ${shipping_address.company != null ? '\n' + capataliseEach(shipping_address.company) : ''}
 ${capataliseEach(shipping_address.address1)} ${shipping_address.address2 != '' ? '\n' + capataliseEach(shipping_address.address2) : ''}
 ${capataliseEach(shipping_address.city)}
-${shipping_address.zip.toUpperCase()}`
-      console.log(address)
+${shipping_address.zip.toUpperCase()}` //indentation to ensure address is formatted correctly
       doc
-        .fontSize(14) //need to check this 
+        .fontSize(14)
         .text(address, {
           align: 'center'
         })
@@ -53,16 +42,22 @@ ${shipping_address.zip.toUpperCase()}`
       doc.end();
 
       const pdfStream = await getStream.buffer(doc);
-      console.log(pdfStream);
       resolve(200);
     } catch (error) {
       console.log(error);
       reject("Create order flow failed to succeed.");
     }
 
+    // Call Clicksit to generate the return labels
+
+    // Send labels to Sharepoint, investigate use of streams
+
+    // Update order reference with tracking number from Clicksit and fulfillment_status to Fulfilled
+    // Double check the status and if we can use the reference property to store the tracking number
+
   });
 }
 
-function capataliseEach(text){
+function capataliseEach(text) {
   return text.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
 }

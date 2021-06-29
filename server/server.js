@@ -203,25 +203,9 @@ app.prepare().then(async () => {
     }
   });
 
-  // const show = async(req, res) => {
-  //   const pdfKitService = new PdfKitService();
-  //   const pdfStream = await pdfKitService.generatePdf();
-
-  //   res
-  //     .writeHead(200, {
-  //       'Content-Length': Buffer.byteLength(pdfStream),
-  //       'Content-Type': 'application/pdf',
-  //       'Content-disposition': 'attachment;filename=test.pdf',
-  //     })
-  //     .end(pdfStream);
-
-
-  // }
-
   router.get("(/_next/static/.*)", handleRequest); // Static content is clear
   router.get("/_next/webpack-hmr", handleRequest); // Webpack content is clear
   router.get("(.*)", verifyRequest(), handleRequest); // Everything else must have sessions
-  // router.get('/pdf', show);
 
   server.use(async (ctx, next) => {
     if (ctx.path === '/graphql' || ctx.path.includes('/webhooks')) {
