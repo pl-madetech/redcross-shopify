@@ -1,5 +1,5 @@
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
-import { ClickSit_CreateReturnLabels, ClickSit_GetTrackingStatus } from "../endpoints";
+import { ClickSit_CreateReturnLabels, ClickSit_GetTrackingStatus, Shopify_addOrderTrackingNote, Shopify_GetOrders } from "../endpoints";
 
 export class ClickSitService {
   constructor(appBridge) {
@@ -45,6 +45,65 @@ export class ClickSitService {
 
     } catch (err) {
       console.log(err);
+    }
+  }
+
+  updateOrder = async (orderReference, trackingNumber) => {
+    try {
+      console.log("Trying to update order")
+      let updateStatus = await authenticatedFetch(this.appBridge)(Shopify_addOrderTrackingNote, {
+        method: "POST",
+        headers: {
+         "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          "orderReference":orderReference,
+          "trackingNumber":trackingNumber
+        })
+     })
+    .then(result => {
+      return updateStatus.json();
+    })
+    } catch (e) {
+      console.warn("Error! "+e)
+    }
+  }
+
+  getOrders = async (numberOfRecords = 10, searchQuery = "fire unfulfilled") => {
+    try {
+      let updateStatus = await authenticatedFetch(this.appBridge)(Shopify_GetOrders, {
+        method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: 
+      `query {
+        orders(first: ${numberOfRecords}, query: ${searchQuery}) {
+          edges {
+            node {
+              id,
+              createdAt,
+              note,
+              lineItems (first: ${numberOfRecords}) {
+                edges {
+                  node {
+                  id,
+                  name,
+                  quantity,
+                  fulfillmentStatus
+                  }
+                }
+              }
+            }
+          }
+        }
+      }`
+  })
+    .then(result => {
+      return updateStatus.json();
+    })
+    } catch (e) {
+      console.warn("Error! "+e)
     }
   }
 }

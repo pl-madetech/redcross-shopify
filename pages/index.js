@@ -40,8 +40,8 @@ class Index extends React.Component {
         secondaryActions={[{
 
           content: 'GraphQL Test', onAction: async () => {
-            console.log("GraphQL event");
-
+            
+            this.clickSitService.updateOrder("gid://shopify/Order/3983989047456", "I was updated by Graphql Apollo")
 
           }
         }]}

@@ -8,10 +8,12 @@ import Koa from "koa";
 import next from "next";
 import Router from "koa-router";
 import bodyParser from "koa-bodyparser";
-import { ClickSit_CreateReturnLabels, ClickSit_GetTrackingStatus } from "./endpoints";
+import { ClickSit_CreateReturnLabels, ClickSit_GetTrackingStatus, Shopify_GetOrders, Shopify_addOrderTrackingNote } from "./endpoints";
 import { createOrder } from "./workfllow/create-order";
 
 dotenv.config();
+
+var accessTokenAlex;
 
 const {
   SHOPIFY_API_KEY,
@@ -58,6 +60,7 @@ app.prepare().then(async () => {
       async afterAuth(ctx) {
         // Access token and shop available in ctx.state.shopify
         const { shop, accessToken, scope } = ctx.state.shopify;
+        accessTokenAlex = accessToken  
         const host = ctx.query.host;
         ACTIVE_SHOPIFY_SHOPS[shop] = scope;
 
@@ -162,7 +165,7 @@ app.prepare().then(async () => {
 
       console.log(ctx.request.body);
 
-      const results = await fetch(CLICKSIT_RETURN_LABELS_URL, {
+      const results = await fetch(process.env.CLICKSIT_RETURN_LABELS_URL, {
         method: "POST",
         body: JSON.stringify(ctx.request.body),
       })
@@ -180,16 +183,67 @@ app.prepare().then(async () => {
     }
   });
 
+  router.post(Shopify_GetOrders, verifyRequest(), async (ctx) => {
+    try {
+
+      console.log(ctx.request.body);
+
+      const results = await fetch("https://lex-magic-shoppe.myshopify.com/admin/api/2021-04/graphql.json", {
+        method: "POST",
+        body: JSON.stringify(ctx.request.body),
+      })
+        .then(response => response.json())
+        .then(json => {
+          return json;
+        });
+
+      ctx.body = {
+        data: results
+      };
+
+    } catch (err) {
+      console.log(err)
+    }
+  });
+
+   
+    router.post(Shopify_addOrderTrackingNote, verifyRequest(), async (req) => {
+      console.log(JSON.stringify(req, null, 2))
+      // console.log("Request = "+req.body.trackingNumber)
+    fetch("https://lex-magic-shoppe.myshopify.com/admin/api/2021-04/graphql.json", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+         "X-Shopify-Access-Token": accessTokenAlex
+      },
+      body: JSON.stringify({
+        query: `mutation {
+                  orderUpdate (input: {id: "gid://shopify/Order/3983989047456", note:"I was updated by Graphql!"}) {
+                    order {
+                      id,
+                      note
+                    }
+                  }
+                }`
+      })
+    })
+    .then(result => {
+      console.log("Fetched!")
+      console.log("data returned:\n", result);
+      return result.json();
+    })
+  })
+
   router.post(ClickSit_GetTrackingStatus, verifyRequest(), async (ctx) => {
     try {
 
       console.log(ctx.request.body);
 
-      const results = await fetch(CLICKSIT_GET_TRACKING_STATUS_URL, {
+      const results = await fetch(process.env.CLICKSIT_GET_TRACKING_STATUS_URL, {
         method: "POST",
         body: JSON.stringify(ctx.request.body),
         headers: {
-          'api-key': CLICKSIT_GET_TRACKING_STATUS_API_KEY,
+          'api-key': process.env.CLICKSIT_GET_TRACKING_STATUS_API_KEY,
         },
       })
         .then(response => response.json())
