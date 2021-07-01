@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
 import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
-import { Filters, Card, DataTable, Spinner, Stack, Pagination } from "@shopify/polaris";
+import { Filters, Card, DataTable, Spinner, Stack, Pagination, Button } from "@shopify/polaris";
 
 const GET_ORDERS = gql`
   query getOrders($first: Int!, $cursor: String) {
@@ -58,14 +58,30 @@ class OrdersList extends React.Component {
     this.state = {
       itemsPerPage: 10,
       orders: [],
-      orderCursor: [],
-      hasPrevious: false,
+      lastOrderCursor: {},
       hasNext: false,
     }
   }
 
-  componentDidCatch() {
-    console.log("OrdersList::Catch something wrong");
+  setPagination = (data) => {
+    this.state.hasNext = data.orders?.pageInfo?.hasNextPage ?? false;
+  }
+
+  setOrders = (data) => {
+    if (Array.isArray(data.orders?.edges) && data.orders?.edges.length) {
+      this.state.orders.length = 0;
+      data.orders.edges.map(item => {
+        const { createdAt, name, shippingAddress, customer, note } = item.node;
+        const column = [name, createdAt, shippingAddress?.address1 ?? "-", customer?.email ?? "-", customer?.displayName ?? "-", note ?? "-"];
+        this.state.orders.push(column);
+      });
+    }
+  }
+
+  setOrdersCursor = (data) => {
+    if (Array.isArray(data.orders?.edges) && data.orders?.edges.length) {
+      this.state.lastOrderCursor = data.orders.edges[data.orders.edges.length - 1].cursor;
+    }
   }
 
   render() {
@@ -88,54 +104,20 @@ class OrdersList extends React.Component {
           }
           if (error) return <div>{error.message}</div>;
 
-          if (data.orders?.pageInfo?.hasNextPage) {
-            this.state.hasNext = true;
-            fetchMore({
-              variables: { first: this.state.itemsPerPage, cursor: data.orders.length }
-            });
-          }
-
-          if (data.orders?.pageInfo?.hasPreviousPage) {
-            this.state.hasPrevious = true;
-            fetchMore({
-              variables: { first: this.state.itemsPerPage, cursor: data.orders.length }
-            });
-          }
-
-          if (Array.isArray(data.orders?.edges) && data.orders?.edges.length) {
-            data.orders.edges.map(item => {
-              const { id, createdAt, name, shippingAddress, customer } = item.node;
-              const column = [id, name, createdAt, shippingAddress?.address1 ?? "-", customer?.email ?? "-", customer?.displayName ?? "-"];
-              this.state.orders.push(column);
-            });
-
-            var firstItem = data.orders.edges[0].cursor;
-            var lastItem = data.orders.edges[data.orders.edges.length-1].cursor;
-
-            this.state.orderCursor.push([firstItem, lastItem]);
-          }
+          this.setPagination(data);
+          this.setOrders(data);
+          this.setOrdersCursor(data);
 
           return (
             <Card>
               <Card.Section>
-                <Pagination
-                  label="Pagination"
-                  hasPrevious={this.state.hasPrevious}
-                  onPrevious={() => {
-                    console.log('Previous');
-
-                  }}
-                  hasNext={this.state.hasNext}
-                  onNext={() => {
-                    console.log('Next', this.state.orderCursor);
+                <Button primary disabled={!this.state.hasNext} onClick={() => {
+                  if (this.state.hasNext) {
                     fetchMore({
-                      variables: { first: this.state.itemsPerPage, cursor: this.state.orderCursor[1] }
-                    }).then(res => {
-                      console.log("FetchmoreData::", res);
-                      this.setState({order: res.data.orders })
+                      variables: { first: this.state.itemsPerPage, cursor: this.state.lastOrderCursor }
                     });
-                  }}
-                />
+                  }
+                }}>Load more orders</Button>
               </Card.Section>
               <DataTableFilter />
               <DataTable
@@ -147,12 +129,12 @@ class OrdersList extends React.Component {
                   'text',
                 ]}
                 headings={[
-                  'ID',
                   'Name',
                   'Created At',
                   'Shipping Address',
                   'Email',
-                  'Display Name'
+                  'Display Name',
+                  'Tracking Number',
                 ]}
                 rows={this.state.orders}
                 footerContent={`Showing ${this.state.orders.length} of ${this.state.orders.length} results`}

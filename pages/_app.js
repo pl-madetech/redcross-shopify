@@ -14,53 +14,69 @@ function userLoggedInFetch(app) {
   const fetchFunction = authenticatedFetch(app);
 
   return async (uri, options) => {
-    const response = await fetchFunction(uri, options);
 
-    if (
-      response.headers.get("X-Shopify-API-Request-Failure-Reauthorize") === "1"
-    ) {
-      const authUrlHeader = response.headers.get(
-        "X-Shopify-API-Request-Failure-Reauthorize-Url"
-      );
+    try {
+      const response = await fetchFunction(uri, options);
 
-      const redirect = Redirect.create(app);
-      redirect.dispatch(Redirect.Action.APP, authUrlHeader || `/auth`);
-      return null;
+      if (
+        response.headers.get("X-Shopify-API-Request-Failure-Reauthorize") === "1"
+      ) {
+        const authUrlHeader = response.headers.get(
+          "X-Shopify-API-Request-Failure-Reauthorize-Url"
+        );
+
+        const redirect = Redirect.create(app);
+
+        redirect.dispatch(Redirect.Action.APP, authUrlHeader || `/auth`);
+        return null;
+      }
+
+      return response;
+
+    } catch (err) {
+      console.error(err);
     }
-
-    return response;
   };
+
 }
 
 function MyProvider(props) {
-  const app = useAppBridge();
 
-  const client = new ApolloClient({
-    link: new createHttpLink({
-      fetch: userLoggedInFetch(app),
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/graphql',
-      },
-    }),
-    cache: new InMemoryCache({
-      typePolicies: {
-        Query: {
-          fields: {
-            orders: relayStylePagination(["query"]),
-          },
+  try {
+    const app = useAppBridge();
+
+    const client = new ApolloClient({
+      link: new createHttpLink({
+        fetch: userLoggedInFetch(app),
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/graphql',
         },
-      },
-    }),
-  });
+      }),
+      cache: new InMemoryCache(
+        {
+          typePolicies: {
+            Query: {
+              fields: {
+                orders: relayStylePagination(),
+              },
+            },
+          },
+        }
+      ),
+    });
 
-  const Component = props.Component;
+    const Component = props.Component;
 
-  return (
-    <ApolloProvider client={client}>
-      <Component {...props} appBridge={app} />
-    </ApolloProvider>
-  );
+    return (
+      <ApolloProvider client={client}>
+        <Component {...props} appBridge={app} />
+      </ApolloProvider>
+    );
+
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 class MyApp extends App {

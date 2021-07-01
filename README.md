@@ -91,3 +91,43 @@ Forwarding                    https://c5ac085793cb.ngrok.io -> http://localhost:
 1. Head over to the settings in the admin dashboard and click notifications.
 2. Scroll down to the webhooks section and click the create webhook button.
 3. Select the event type, the format, and URL which should receive the webhook notification.
+
+## GraphQL Admin API
+
+To test our queries we used the following URL \
+https://shopify.dev/tools/graphiql-admin-api \
+e.g. of orders query 
+```sh
+query getOrders {
+  orders(first: 5, after: null) {
+    pageInfo { hasNextPage, hasPreviousPage }
+    edges {
+      cursor
+      node {
+        id,
+        createdAt,
+        name,
+        displayFulfillmentStatus,
+        email,
+				note,
+        displayAddress { address1, address2, city, country, zip }
+        shippingAddress { address1, address2 },
+        customer { displayName, email }
+      }
+    }
+  }
+}
+
+```
+
+## Issues found prototype phase
+
+1. JWT token not active - https://github.com/Shopify/shopify-node-api/issues/137
+Windows machine - until a fix is done on the JWT lib, workaround,
+```sh
+How to sync date and time manually using Settings
+Open Settings.
+Click on Time & Language.
+Click on Date & time.
+Under “Synchronize your clock,” click the Sync now button. Synchronize clock on Windows 10. Quick Tip: If the process fails, wait a few seconds, and try again.
+```
