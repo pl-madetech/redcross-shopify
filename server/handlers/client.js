@@ -1,4 +1,4 @@
-import ApolloClient from "apollo-boost";
+import { ApolloClient } from '@apollo/client';
 
 // Generate from skeleton, can't figure out how to work with this function.
 // Leave until proptotype is completed, then if not used remove.

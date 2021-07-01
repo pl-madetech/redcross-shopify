@@ -1,5 +1,6 @@
-import ApolloClient from "apollo-boost";
 import { ApolloProvider } from "react-apollo";
+import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
+import { relayStylePagination } from "@apollo/client/utilities";
 import App from "next/app";
 import { AppProvider } from "@shopify/polaris";
 import { Provider, useAppBridge } from "@shopify/app-bridge-react";
@@ -35,10 +36,22 @@ function MyProvider(props) {
   const app = useAppBridge();
 
   const client = new ApolloClient({
-    fetch: userLoggedInFetch(app),
-    fetchOptions: {
-      credentials: "include",
-    },
+    link: new createHttpLink({
+      fetch: userLoggedInFetch(app),
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/graphql',
+      },
+    }),
+    cache: new InMemoryCache({
+      typePolicies: {
+        Query: {
+          fields: {
+            orders: relayStylePagination(["query"]),
+          },
+        },
+      },
+    }),
   });
 
   const Component = props.Component;

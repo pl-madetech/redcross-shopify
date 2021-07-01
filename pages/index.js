@@ -1,6 +1,6 @@
 import { Page, Layout } from "@shopify/polaris";
 import { ClickSitService } from "../server/clicksit/client";
-import ResourceListWithOrders from "../components/ResourceList";
+import OrdersList from "../components/OrdersList";
 import { getSessionToken } from "@shopify/app-bridge-utils";
 
 class Index extends React.Component {
@@ -13,6 +13,10 @@ class Index extends React.Component {
   state = {
     orders: [],
     open: false
+  }
+
+  componentDidCatch() {
+    console.log("Index::Catch something wrong");
   }
 
   render() {
@@ -51,7 +55,7 @@ class Index extends React.Component {
           <Layout.Section>
             {
               /* Orders component */
-              <ResourceListWithOrders />
+              <OrdersList />
             }
           </Layout.Section>
           <Layout.Section>

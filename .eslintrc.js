@@ -4,9 +4,12 @@ module.exports = {
     'plugin:shopify/polaris',
     'plugin:shopify/jest',
     'plugin:shopify/webpack',
+    "plugin:react-hooks/recommended",
   ],
   rules: {
     'import/no-unresolved': 'off',
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
   },
   overrides: [
     {
