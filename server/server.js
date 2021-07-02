@@ -39,7 +39,7 @@ Shopify.Context.initialize({
   API_SECRET_KEY: SHOPIFY_API_SECRET,
   SCOPES: SCOPES.split(","),
   HOST_NAME: HOST.replace(/https:\/\//, ""),
-  API_VERSION: ApiVersion.October20,
+  API_VERSION: ApiVersion.April21,
   IS_EMBEDDED_APP: true,
   // This should be replaced with your preferred storage strategy
   SESSION_STORAGE: new Shopify.Session.MemorySessionStorage(),

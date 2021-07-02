@@ -109,7 +109,7 @@ query getOrders {
         name,
         displayFulfillmentStatus,
         email,
-				note,
+        note,
         displayAddress { address1, address2, city, country, zip }
         shippingAddress { address1, address2 },
         customer { displayName, email }
