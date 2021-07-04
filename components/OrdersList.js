@@ -155,7 +155,6 @@ class OrdersList extends React.Component {
   }
 
   resetOrders = () => {
-    // Clean orders - can't figure out a best way
     this.state.orders.length = 0;
     this.state.orders = [];
   }
