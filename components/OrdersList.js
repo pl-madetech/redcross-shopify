@@ -232,8 +232,6 @@ class OrdersList extends React.Component {
                           this.setOrders(res.data);
                           this.setOrdersCursor(res.data);
 
-                          this.apolloClient.cache.refresh();
-
                           // huge hack to render data into the datatable.
                           // I can't figure out another way.
                           // TODO - figure out how to update the footer with correct results.
