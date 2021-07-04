@@ -8,6 +8,7 @@ class Index extends React.Component {
   constructor(props) {
     super(props);
     this.clickSitService = new ClickSitService(props.appBridge);
+    this.apolloClient = props.apolloClient;
   }
 
   state = {
@@ -55,7 +56,7 @@ class Index extends React.Component {
           <Layout.Section>
             {
               /* Orders component */
-              <OrdersList />
+              <OrdersList apolloClient={this.apolloClient} />
             }
           </Layout.Section>
           <Layout.Section>

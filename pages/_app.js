@@ -70,7 +70,7 @@ function MyProvider(props) {
 
     return (
       <ApolloProvider client={client}>
-        <Component {...props} appBridge={app} />
+        <Component {...props} appBridge={app} apolloClient={client}/>
       </ApolloProvider>
     );
 

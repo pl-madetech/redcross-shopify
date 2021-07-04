@@ -131,3 +131,13 @@ Click on Time & Language.
 Click on Date & time.
 Under “Synchronize your clock,” click the Sync now button. Synchronize clock on Windows 10. Quick Tip: If the process fails, wait a few seconds, and try again.
 ```
+
+## TODO's
+
+1. server.js, when the webhook is triggered sends the order to the application, identify what property is holding the number of bags requested.
+2. workflow -> create-order.js, clean up the PDFLit address label generation to a separate js file. Finalise the logic steps described on the file.
+3. analyze what is required to send streams of data to SharePoint.
+4. @Alex complete the update actions required on the order when we have the return labels from Clicksit (trackingnumber) and change the order status.
+5. include tests into the application, we didn't for the simple reason that working with Shopify react polaris was what we could deal with the two weeks time of investigation.
+6. OrdersList component maybe requires a few tweeks on the graphql side, will depend on Redcross what data they want to see.
+7. Clean up index.js file, it's only a skeleton.

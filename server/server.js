@@ -126,7 +126,7 @@ app.prepare().then(async () => {
         const payload = ctx.state.webhook.payload;
 
         // Retrieve only what is required for the create order flow
-        // Missing count of bags ordered
+        // TODO on readme.md file - Missing count of bags ordered
         const order = {
           order_number: payload.order_number,
           email_address: payload.customer?.email,
@@ -159,9 +159,6 @@ app.prepare().then(async () => {
 
   router.post(ClickSit_CreateReturnLabels, verifyRequest(), async (ctx) => {
     try {
-
-      console.log(ctx.request.body);
-
       const results = await fetch(CLICKSIT_RETURN_LABELS_URL, {
         method: "POST",
         body: JSON.stringify(ctx.request.body),
@@ -182,9 +179,6 @@ app.prepare().then(async () => {
 
   router.post(ClickSit_GetTrackingStatus, verifyRequest(), async (ctx) => {
     try {
-
-      console.log(ctx.request.body);
-
       const results = await fetch(CLICKSIT_GET_TRACKING_STATUS_URL, {
         method: "POST",
         body: JSON.stringify(ctx.request.body),

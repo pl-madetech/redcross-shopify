@@ -4,8 +4,8 @@ import { Query } from 'react-apollo';
 import { Filters, Card, DataTable, Spinner, Stack, Button } from "@shopify/polaris";
 
 const SEARCH_ORDERS = gql`
-  query filterOrders($first: Int!, $search: String) {
-    orders(first: $first , query: $search) {
+  query filterOrders($first: Int!, $search: String, $cursor: String) {
+    orders(first: $first , query: $search, after: $cursor) {
       pageInfo { hasNextPage, hasPreviousPage }
       edges {
         cursor
@@ -47,25 +47,65 @@ const GET_ORDERS = gql`
   }
 `;
 
+const FetchModeGet = "GET";
+const FetchModeSearch = "SEARCH";
+const FetchPolicyCache = "cache";
+const FetchPolicyNoCache = "no-cache";
+
+const DataTableContent = (props) => {
+  return (
+    <DataTable
+      columnContentTypes={[
+        'text',
+        'text',
+        'text',
+        'text',
+        'text',
+      ]}
+      headings={[
+        'Name',
+        'Created At',
+        'Shipping Address',
+        'Email',
+        'Display Name',
+        'Tracking Number',
+      ]}
+      rows={props.orders}
+      footerContent={`Showing ${props.orders.length} of ${props.orders.length} results`}
+    />
+  );
+}
+
 const DataTableFilter = (props) => {
   const [queryValue, setQueryValue] = useState(null);
   const handleFiltersQueryChange = useCallback(
     (value) => {
       setQueryValue(value);
 
+      // Search empty, re-render with initial query parameters
       if (value === "" || value === undefined) {
-        props.ordersList.setState({ ordersQuery: GET_ORDERS });
-        props.ordersList.setState({ ordersVariables: { first: props.ordersList.state.itemsPerPage } });
-      } else {
-        props.ordersList.setState({ ordersQuery: SEARCH_ORDERS });
+
+        // Clean orders - can't figure out a best way
+        props.ordersList.resetOrders();
+        props.ordersList.apolloClient.cache.reset();
+
         props.ordersList.setState({
+          fetchMode: FetchModeGet,
+          fetchPolicy: FetchPolicyCache,
+          ordersQuery: GET_ORDERS,
+          ordersVariables: { first: props.ordersList.state.itemsPerPage }
+        });
+      } else {
+        props.ordersList.setState({
+          fetchMode: FetchModeSearch,
+          fetchPolicy: FetchPolicyNoCache,
+          ordersQuery: SEARCH_ORDERS,
           ordersVariables: {
             first: props.ordersList.state.itemsPerPage,
             search: `name:${value}* OR note:${value}* OR email:${value}*`
           }
         });
       }
-      props.ordersList.render();
     },
     [],
   );
@@ -86,31 +126,38 @@ const DataTableFilter = (props) => {
 class OrdersList extends React.Component {
   constructor(props) {
     super(props);
+
+    const itemsPerPage = 5;
     this.state = {
-      itemsPerPage: 2,
+      fetchPolicy: FetchPolicyCache,
+      fetchMode: FetchModeGet,
+      itemsPerPage: itemsPerPage,
       ordersQuery: GET_ORDERS,
-      ordersVariables: { first: 2 },
+      ordersVariables: { first: itemsPerPage },
       orders: [],
-      clonedOrders: [],
       lastOrderCursor: {},
       hasNext: false,
-      loading: false,
     }
+    this.apolloClient = props.apolloClient;
   }
 
   setPagination = (data) => {
     this.state.hasNext = data.orders?.pageInfo?.hasNextPage ?? false;
   }
 
+  resetOrders = () => {
+    // Clean orders - can't figure out a best way
+    this.state.orders.length = 0;
+  }
+
   setOrders = (data) => {
     if (Array.isArray(data.orders?.edges) && data.orders?.edges.length) {
-      this.state.orders.length = 0;
-      this.state.clonedOrders.length = 0;
       data.orders.edges.map(item => {
         const { createdAt, name, shippingAddress, customer, note } = item.node;
         const column = [name, createdAt, shippingAddress?.address1 ?? "-", customer?.email ?? "-", customer?.displayName ?? "-", note ?? "-"];
+
+        // Add to array without triggering a re-render
         this.state.orders.push(column);
-        this.state.clonedOrders.push(column);
       });
     }
   }
@@ -122,14 +169,13 @@ class OrdersList extends React.Component {
   }
 
   render() {
-    console.log("RENDER::OrdersQuery::OrdersVariables", this.state.ordersQuery, this.state.ordersVariables);
     return (
       <Card>
         <Card.Section>
           <DataTableFilter ordersList={this} />
         </Card.Section>
-        <Query fetchPolicy='no-cache' query={this.state.ordersQuery} variables={this.state.ordersVariables}>
-          {({ data, loading, error }) => {
+        <Query fetchPolicy={this.state.fetchPolicy} query={this.state.ordersQuery} variables={this.state.ordersVariables}>
+          {({ data, loading, error, fetchMore, refetch }) => {
             if (loading) {
               return <Stack
                 distribution="center"
@@ -144,46 +190,61 @@ class OrdersList extends React.Component {
                 </div>
               </Stack>
             }
-            if (error) return <div>{error.message}</div>;
-
-            console.log("HERE!!!", data);
+            if (error) return (
+              <Card>
+                <Card.Section>
+                  <div>
+                    <b>Something went wrong.{' '}</b>
+                    <span style={{ color: '#bf0711' }}>
+                      <Button monochrome outline onClick={() => {
+                        refetch({
+                          variables: { first: this.state.itemsPerPage, cursor: this.state.lastOrderCursor }
+                        });
+                      }}>Retry</Button>
+                    </span>
+                  </div>
+                </Card.Section>
+              </Card>
+            );
 
             this.setPagination(data);
+            this.resetOrders();
             this.setOrders(data);
             this.setOrdersCursor(data);
 
             return (
               <Card>
                 <Card.Section>
-                  <Button primary loading={this.state.loading} disabled={!this.state.hasNext} onClick={() => {
+                  <Button primary disabled={!this.state.hasNext} onClick={() => {
                     if (this.state.hasNext) {
-                      this.setState({ loading: true });
-                      fetchMore({
-                        variables: { first: this.state.itemsPerPage, cursor: this.state.lastOrderCursor }
-                      }).then(() => this.setState({ loading: false }));
+
+                      // Two fetch modes GET or SEARCH
+                      if (this.state.fetchMode === FetchModeGet) {
+                        fetchMore({
+                          variables: { first: this.state.itemsPerPage, cursor: this.state.lastOrderCursor }
+                        });
+
+                      } else if (this.state.fetchMode === FetchModeSearch) {
+                        fetchMore({
+                          variables: { first: this.state.itemsPerPage, search: this.state.ordersVariables.search, cursor: this.state.lastOrderCursor }
+                        }).then((res) => {
+                          this.setPagination(res.data);
+                          this.setOrders(res.data);
+                          this.setOrdersCursor(res.data);
+
+                          this.apolloClient.cache.refresh();
+
+                          // huge hack to render data into the datatable.
+                          // I can't figure out another way.
+                          // TODO - figure out how to update the footer with correct results.
+                          window.dispatchEvent(new Event('resize'));
+                        });
+                      }
                     }
                   }}>{this.state.hasNext ? "Load more orders" : "No more orders"}</Button>
                 </Card.Section>
                 <Card.Section>
-                  <DataTable
-                    columnContentTypes={[
-                      'text',
-                      'text',
-                      'text',
-                      'text',
-                      'text',
-                    ]}
-                    headings={[
-                      'Name',
-                      'Created At',
-                      'Shipping Address',
-                      'Email',
-                      'Display Name',
-                      'Tracking Number',
-                    ]}
-                    rows={this.state.orders}
-                    footerContent={`Showing ${this.state.orders.length} of ${this.state.orders.length} results`}
-                  />
+                  <DataTableContent orders={this.state.orders} />
                 </Card.Section>
               </Card>
             );
