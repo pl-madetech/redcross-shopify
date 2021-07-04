@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useContext } from "react";
+import React, { useState, useCallback } from "react";
 import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
 import { Filters, Card, DataTable, Spinner, Stack, Button, Collapsible, Banner } from "@shopify/polaris";

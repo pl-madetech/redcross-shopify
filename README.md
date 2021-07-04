@@ -135,7 +135,7 @@ Under “Synchronize your clock,” click the Sync now button. Synchronize clock
 ## TODO's
 
 1. server.js, when the webhook is triggered sends the order to the application, identify what property is holding the number of bags requested.
-2. workflow -> create-order.js, clean up the PDFLit address label generation to a separate js file. Finalise the logic steps described on the file.
+2. workflow -> create-order.js, clean up the PDFkit address label generation to a separate js file. Finalise the logic steps described on the file.
 3. analyze what is required to send streams of data to SharePoint.
 4. @Alex complete the update actions required on the order when we have the return labels from Clicksit (trackingnumber) and change the order status.
 5. include tests into the application, we didn't for the simple reason that working with Shopify react polaris was what we could deal with the two weeks time of investigation.
