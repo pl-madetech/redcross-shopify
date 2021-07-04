@@ -51,29 +51,37 @@ const FetchModeGet = "GET";
 const FetchModeSearch = "SEARCH";
 const FetchPolicyCache = "cache";
 const FetchPolicyNoCache = "no-cache";
+let dTableSingleton;
 
-const DataTableContent = (props) => {
-  return (
-    <DataTable
-      columnContentTypes={[
-        'text',
-        'text',
-        'text',
-        'text',
-        'text',
-      ]}
-      headings={[
-        'Name',
-        'Created At',
-        'Shipping Address',
-        'Email',
-        'Display Name',
-        'Tracking Number',
-      ]}
-      rows={props.orders}
-      footerContent={`Showing ${props.orders.length} of ${props.orders.length} results`}
-    />
-  );
+class DataTableContent extends React.Component {
+  constructor(props) {
+    super(props);
+    dTableSingleton = this;
+  }
+
+  render() {
+    return (
+      <DataTable
+        columnContentTypes={[
+          'text',
+          'text',
+          'text',
+          'text',
+          'text',
+        ]}
+        headings={[
+          'Name',
+          'Created At',
+          'Shipping Address',
+          'Email',
+          'Display Name',
+          'Tracking Number',
+        ]}
+        rows={this.props.orders}
+        footerContent={`Showing ${this.props.orders.length} results`}
+      />
+    );
+  }
 }
 
 const DataTableFilter = (props) => {
@@ -136,6 +144,7 @@ class OrdersList extends React.Component {
       ordersVariables: { first: itemsPerPage },
       orders: [],
       lastOrderCursor: {},
+      ordersTotal: itemsPerPage,
       hasNext: false,
     }
     this.apolloClient = props.apolloClient;
@@ -148,6 +157,7 @@ class OrdersList extends React.Component {
   resetOrders = () => {
     // Clean orders - can't figure out a best way
     this.state.orders.length = 0;
+    this.state.orders = [];
   }
 
   setOrders = (data) => {
@@ -232,10 +242,8 @@ class OrdersList extends React.Component {
                           this.setOrders(res.data);
                           this.setOrdersCursor(res.data);
 
-                          // huge hack to render data into the datatable.
-                          // I can't figure out another way.
-                          // TODO - figure out how to update the footer with correct results.
-                          window.dispatchEvent(new Event('resize'));
+
+                          dTableSingleton.setState({props: this.state.orders });
                         });
                       }
                     }
