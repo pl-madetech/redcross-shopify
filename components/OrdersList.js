@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useContext } from "react";
 import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
-import { Filters, Card, DataTable, Spinner, Stack, Button } from "@shopify/polaris";
+import { Filters, Card, DataTable, Spinner, Stack, Button, Collapsible, Banner } from "@shopify/polaris";
 
 const SEARCH_ORDERS = gql`
   query filterOrders($first: Int!, $search: String, $cursor: String) {
@@ -117,17 +117,37 @@ const DataTableFilter = (props) => {
     },
     [],
   );
-  const handleQueryValueRemove = useCallback(() => setQueryValue(null), []);
-  const handleFiltersClearAll = useCallback(() => { handleQueryValueRemove(); }, [handleQueryValueRemove,]);
 
   return (
     <Filters
       queryValue={queryValue}
       filters={[]}
       onQueryChange={handleFiltersQueryChange}
-      onQueryClear={handleQueryValueRemove}
-      onClearAll={handleFiltersClearAll}
     />
+  );
+}
+
+const CollapsibleLoader = (props) => {
+  const [open, setOpen] = useState(false);
+  const handleToggle = useCallback(() => setOpen((open) => !open), []);
+
+  // Register return toggle reference to parent.
+  props.handleToggle(handleToggle);
+
+  return (
+    <Collapsible
+      open={open}
+      id="basic-collapsible"
+      transition={{ duration: '500ms', timingFunction: 'ease-in-out' }}
+      expandOnPrint
+    >
+      <Banner
+        title="Loading orders"
+        status="info"
+      >
+        <Spinner accessibilityLabel="Loading" size="small" />
+      </Banner>
+    </Collapsible>
   );
 }
 
@@ -148,6 +168,10 @@ class OrdersList extends React.Component {
       hasNext: false,
     }
     this.apolloClient = props.apolloClient;
+  }
+
+  handleToggle = (handleToggle) => {
+    this.toggleLoading = handleToggle;
   }
 
   setPagination = (data) => {
@@ -226,27 +250,31 @@ class OrdersList extends React.Component {
                 <Card.Section>
                   <Button primary disabled={!this.state.hasNext} onClick={() => {
                     if (this.state.hasNext) {
+                      this.toggleLoading();
 
                       // Two fetch modes GET or SEARCH
                       if (this.state.fetchMode === FetchModeGet) {
                         fetchMore({
                           variables: { first: this.state.itemsPerPage, cursor: this.state.lastOrderCursor }
-                        });
+                        }).then(_ => this.toggleLoading());
 
                       } else if (this.state.fetchMode === FetchModeSearch) {
+
                         fetchMore({
                           variables: { first: this.state.itemsPerPage, search: this.state.ordersVariables.search, cursor: this.state.lastOrderCursor }
-                        }).then((res) => {
+                        }).then(res => {
                           this.setPagination(res.data);
                           this.setOrders(res.data);
                           this.setOrdersCursor(res.data);
 
+                          // Force re-render of datatable component.
+                          dTableSingleton.setState({ props: this.state.orders });
 
-                          dTableSingleton.setState({props: this.state.orders });
-                        });
+                        }).then(_ => this.toggleLoading());
                       }
                     }
                   }}>{this.state.hasNext ? "Load more orders" : "No more orders"}</Button>
+                  <CollapsibleLoader handleToggle={this.handleToggle} />
                 </Card.Section>
                 <Card.Section>
                   <DataTableContent orders={this.state.orders} />
