@@ -86,6 +86,8 @@ Forwarding                    http://c5ac085793cb.ngrok.io -> http://localhost:8
 Forwarding                    https://c5ac085793cb.ngrok.io -> http://localhost:8081
 ```
 
+4. Update app setup on Shopify partners
+
 ## Configuring a webhook using the Shopify Admin
 
 1. Head over to the settings in the admin dashboard and click notifications.
